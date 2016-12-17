@@ -17,6 +17,7 @@ def clean_timestamp(pe):
 
 
 def clean_debug(pe):
+
     for d in pe.DIRECTORY_ENTRY_DEBUG:
         try:
             path_before = d.entry.PdbFileName
@@ -50,8 +51,11 @@ def main():
     print '# Cleaning PE Timestamp'
     clean_timestamp(pe)
 
-    print '# Cleaning Debug Info'
-    clean_debug(pe)
+    if hasattr(pe, 'DIRECTORY_ENTRY_DEBUG'):
+        print '# Cleaning Debug Info'
+        clean_debug(pe)
+    else:
+        print '# There is no debug info to clean'
 
     out_path = pe_path + '.clean.exe'
     print '# Writing cleaned PE to {}'.format(out_path)
