@@ -6,6 +6,8 @@ import ntpath
 
 def clean_timestamp(pe):
 
+    print '# Cleaning Timestamp'
+
     def formatter(ts):
         return time.strftime('%Y-%m-%d %H:%M:%S', time.gmtime(ts))
 
@@ -16,7 +18,11 @@ def clean_timestamp(pe):
     print '{} -> {}'.format(before, after)
 
 
-def clean_debug(pe):
+def clean_debug_if_exists(pe):
+
+    print '# Cleaning Debug Info'
+    if not hasattr(pe, 'DIRECTORY_ENTRY_DEBUG'):
+        return
 
     for d in pe.DIRECTORY_ENTRY_DEBUG:
         try:
@@ -28,11 +34,22 @@ def clean_debug(pe):
             d.entry.Age = 1
             age_after = d.entry.Age
 
-            print 'PDB Path: {} -> {}'.format(path_before, path_after)
-            print 'Age: {} -> {}'.format(age_before, age_after)
+            print '# # PDB Path: {} -> {}'.format(path_before, path_after)
+            print '# # Age: {} -> {}'.format(age_before, age_after)
         except:
             pass
 
+
+def fix_checksum_if_exists(pe):
+
+    print '# Fixing Checksum'
+    if pe.OPTIONAL_HEADER.CheckSum:
+        pe.OPTIONAL_HEADER.CheckSum = pe.generate_checksum()
+
+def save_output(pe, out_path):
+
+    print '# Writing cleaned PE to {}'.format(out_path)
+    pe.write(filename=out_path)
 
 def usage():
     print '{} <pe.exe>'.format(sys.argv[0])
@@ -48,20 +65,11 @@ def main():
 
     pe = pefile.PE(pe_path)
 
-    print '# Cleaning PE Timestamp'
     clean_timestamp(pe)
-
-    if hasattr(pe, 'DIRECTORY_ENTRY_DEBUG'):
-        print '# Cleaning Debug Info'
-        clean_debug(pe)
-    else:
-        print '# There is no debug info to clean'
+    clean_debug_if_exists(pe)
+    fix_checksum_if_exists(pe)
 
     out_path = pe_path + '.clean.exe'
-    print '# Writing cleaned PE to {}'.format(out_path)
-    pe.write(filename=out_path)
-
-    print '# Done'
-
+    save_output(pe, out_path)
 
 main()
