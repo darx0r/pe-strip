@@ -1,5 +1,5 @@
-# pe_cleaner
-cleans PE metadata
+# pe-strip
+strips PE metadata
 
 ## What metadata
 * PE compilation timestamp reset
